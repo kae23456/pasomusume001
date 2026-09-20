@@ -2,28 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-<!--  <meta http-equiv="refresh" content="10"> -->
+<!--<meta http-equiv="refresh" content="3"> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>試合動画アーカイブ</title>
 
-  <!-- Cookieチェック処理（ページの描画前に即座に実行する） -->
-  <script>
-    function getCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i].trim();
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null;
-    }
-
-    // Cookieが無い場合はトップページ（認証画面）へ強制リダイレクト
-    if (getCookie("site_authenticated") !== "true") {
-      alert("閲覧には認証が必要です。");
-      window.location.href = "index.html";
-    }
-  </script>
 
   
   <style>
@@ -96,7 +78,7 @@
     }
     .video-wrapper {
       position: relative;
-      padding-bottom: 56.25%; /* 16:9のアスペクト比 */
+      padding-bottom: 56.25%; /* 16:9 */
       height: 0;
       overflow: hidden;
     }
@@ -130,7 +112,7 @@
       font-size: 0.75rem;
     }
 
-    /* 該当動画なしメッセージ */
+    /* 該当動画なし */
     .no-results {
       grid-column: 1 / -1;
       text-align: center;
@@ -150,13 +132,13 @@
 
   <script>
     function logout() {
-      // 過去の日付を指定することでCookieを削除
+      // 過去の日付を指定Cookieを削除
       document.cookie = "site_authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       window.location.href = "index.html";
     }
   </script>
 
-  <!-- 絞り込みフィルター部分 -->
+  <!-- 絞り込みフィルター -->
   <div class="filter-container">
     <div class="filter-group">
       <label for="yearFilter">年度:</label>
@@ -207,20 +189,6 @@
       } */
     ];
 
-    //button要素
-    const myButton = document.createElement('button');
-    // 2. ボタンのテキストや見た目（クラスなど）を設定
-myButton.textContent = 'YouTubeアプリで見る';
-myButton.className = 'app-btn';
-
-// 3. クリック時の処理を設定（指定のURLへ遷移）
-myButton.addEventListener('click', function() {
-  const videoId = 'dQw4w9WgXcQ';
-  
-  // スマホならYouTubeアプリを開き、ダメならブラウザで開く処理
-  window.location.href = `youtube://www.youtube.com/watch?v=${videoId}`;
-  // 4. 作成したボタンを画面上の特定の要素（例: id="buttonContainer"）に追加
-document.getElementById('buttonContainer').appendChild(myButton);
     // DOM要素の取得
     const yearFilter = document.getElementById("yearFilter");
     const opponentFilter = document.getElementById("opponentFilter");
@@ -238,8 +206,11 @@ document.getElementById('buttonContainer').appendChild(myButton);
         return matchesYear && matchesOpponent;
       });
 
+
       // 画面（HTML）への表示処理
       videoGrid.innerHTML = "";
+
+      
 
       if (filteredVideos.length === 0) {
         videoGrid.innerHTML = '<div class="no-results">該当する動画が見つかりませんでした。</div>';
@@ -252,6 +223,7 @@ document.getElementById('buttonContainer').appendChild(myButton);
 
         // タグのHTML生成
         const tagsHtml = video.tags.map(tag => `<span class="tag">#${tag}</span>`).join("");
+        const buttonsHtml = video.tags.map(tag => `<span class="tag">#${tag}</span>`).join("");
 
         card.innerHTML = `
           <div class="video-wrapper">
@@ -268,7 +240,6 @@ document.getElementById('buttonContainer').appendChild(myButton);
               <span class="tag">${video.year}年</span>
               <span class="tag">vs ${video.opponent}</span>
               ${tagsHtml}
-              button onclick="location.href='youtube://[www.youtube.com/watch?v=id]'": ようつべで見る
             </div>
           </div>
         `;
