@@ -1,5 +1,5 @@
 # Basic認証の設定
 AuthType Basic
 AuthName "Restricted Area"
-AuthUserFile /サーバーの絶対パス/.htpasswd
+AuthUserFile https://github.com/kae23456/pasomusume001/blob/60e02eec5b9d2922d13704f2ec9f78fc52f0351a/.htpasswd
 Require valid-user
