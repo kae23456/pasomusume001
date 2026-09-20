@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>閲覧認証</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+    input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .error { color: red; font-size: 0.85rem; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>試合動画アーカイブ</h2>
+    <p>【問題】今年度のスローガンを入力してください。</p>
+    <form id="authForm">
+      <input type="password" id="passInput" placeholder="回答を入力" required>
+      <button type="submit">認証して進む</button>
+    </form>
+    <div id="errorMsg" class="error">回答が違います。</div>
+  </div>
+
+  <script>
+    // 設定パラメータ
+    const TARGET_PAGE = "match2026.html"; // 移動先のページ
+    const COOKIE_NAME = "site_authenticated";
+    const COOKIE_VALUE = "true";
+    const EXPIRES_DAYS = 7; // Cookieの有効期限（7日間保持）
+
+    // --- Cookie操作用ヘルパー関数 ---
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + d.toUTCString();
+      // SameSite=Lax を指定してセキュリティ向上
+      document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // --- ページ読み込み時のCookie判定 ---
+    // すでにCookieがあれば入力画面を出さずに動画ページへ直接スキップ
+    if (getCookie(COOKIE_NAME) === COOKIE_VALUE) {
+      window.location.href = TARGET_PAGE;
+    }
+
+    // --- フォーム送信時の処理 ---
+    document.getElementById("authForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const input = document.getElementById("passInput").value.trim().toLowerCase();
+
+      // パスワード判定処理（ファイル存在確認方式）
+      const checkUrl = input + ".html";
+
+      fetch(checkUrl, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok && checkUrl === TARGET_PAGE) {
+            // 正解の場合：Cookieを発行してページ移動
+            setCookie(COOKIE_NAME, COOKIE_VALUE, EXPIRES_DAYS);
+            window.location.href = TARGET_PAGE;
+          } else {
+            document.getElementById("errorMsg").style.display = "block";
+          }
+        })
+        .catch(() => {
+          document.getElementById("errorMsg").style.display = "block";
+        });
+    });
+  </script>
+</body>
+</html>
