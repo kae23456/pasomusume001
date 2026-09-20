@@ -2,83 +2,243 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+<!--  <meta http-equiv="refresh" content="10"> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>閲覧認証</title>
+  <title>試合動画アーカイブ</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
-    input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    .error { color: red; font-size: 0.85rem; margin-top: 10px; display: none; }
+    /* 全体スタイル */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f4f6f8;
+      color: #333;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    /* フィルターエリア */
+    .filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    label {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+      background-color: #fff;
+    }
+
+    /* 動画グリッド表示 */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .video-card {
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9のアスペクト比 */
+      height: 0;
+      overflow: hidden;
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .video-info {
+      padding: 15px;
+      flex-grow: 1;
+    }
+    .video-title {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .tag {
+      background: #eef2f5;
+      color: #555;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    /* 該当動画なしメッセージ */
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px;
+      color: #777;
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>試合動画アーカイブ</h2>
-    <p>【問題】今年度のスローガンを入力してください。</p>
-    <form id="authForm">
-      <input type="password" id="passInput" placeholder="回答を入力" required>
-      <button type="submit">認証して進む</button>
-    </form>
-    <div id="errorMsg" class="error">回答が違います。</div>
+  <header>
+    <h1>限定公開 試合動画アーカイブ</h1>
+    <p>条件を選択して目的の動画を探せます</p>
+  </header>
+
+  <!-- 絞り込みフィルター部分 -->
+  <div class="filter-container">
+    <div class="filter-group">
+      <label for="yearFilter">年度:</label>
+      <select id="yearFilter">
+        <option value="all">すべて</option>
+        <option value="2026">2026年度</option>
+        <option value="2025">2025年度</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="opponentFilter">対戦相手:</label>
+      <select id="opponentFilter">
+        <option value="all">すべて</option>
+        <option value="A大学">A大学</option>
+        <option value="B大学">B大学</option>
+        <option value="C高校">C高校</option>
+      </select>
+    </div>
   </div>
 
+  <!-- 動画一覧出力エリア -->
+  <div id="videoGrid" class="video-grid"></div>
+
   <script>
-    // 設定パラメータ
-    const TARGET_PAGE = "match2026.html"; // 移動先のページ
-    const COOKIE_NAME = "site_authenticated";
-    const COOKIE_VALUE = "true";
-    const EXPIRES_DAYS = 7; // Cookieの有効期限（7日間保持）
+    // 1. 動画データ定義（YouTubeの動画IDを設定）
+    const videos = [
+      {
+        id: "0BYBRf42wWI", // YouTubeの動画ID
+        title: "2025年 リーグ戦 vs 名古屋大学",
+        year: "2025",
+        opponent: "名古屋大学",
+        tags: ["リーグ戦"]
+      },
+      {
+        id: "VgCCOsXza6c",
+        title: "2025年 リーグ戦 vs 愛知淑徳大学",
+        year: "2025",
+        opponent: "愛知淑徳大学",
+        tags: ["リーグ戦"]
+      },
+/*      {
+        id: "dQw4w9WgXcQ",
+        title: "2025年 秋季大会 vs C高校 決勝",
+        year: "2025",
+        opponent: "C高校",
+        tags: ["公式戦", "決勝"]
+      } */
+    ];
 
-    // --- Cookie操作用ヘルパー関数 ---
-    function setCookie(name, value, days) {
-      const d = new Date();
-      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-      const expires = "expires=" + d.toUTCString();
-      // SameSite=Lax を指定してセキュリティ向上
-      document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
-    }
+    // DOM要素の取得
+    const yearFilter = document.getElementById("yearFilter");
+    const opponentFilter = document.getElementById("opponentFilter");
+    const videoGrid = document.getElementById("videoGrid");
 
-    function getCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i].trim();
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    // 2. フィルタリング＆描画関数
+    function renderVideos() {
+      const selectedYear = yearFilter.value;
+      const selectedOpponent = opponentFilter.value;
+
+      // 配列の絞り込み処理
+      const filteredVideos = videos.filter(video => {
+        const matchesYear = (selectedYear === "all" || video.year === selectedYear);
+        const matchesOpponent = (selectedOpponent === "all" || video.opponent === selectedOpponent);
+        return matchesYear && matchesOpponent;
+      });
+
+      // 画面（HTML）への表示処理
+      videoGrid.innerHTML = "";
+
+      if (filteredVideos.length === 0) {
+        videoGrid.innerHTML = '<div class="no-results">該当する動画が見つかりませんでした。</div>';
+        return;
       }
-      return null;
+
+      filteredVideos.forEach(video => {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        // タグのHTML生成
+        const tagsHtml = video.tags.map(tag => `<span class="tag">#${tag}</span>`).join("");
+
+        card.innerHTML = `
+          <div class="video-wrapper">
+            <iframe 
+              src="https://www.youtube.com/embed/${video.id}" 
+              title="${video.title}" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+            </iframe>
+          </div>
+          <div class="video-info">
+            <div class="video-title">${video.title}</div>
+            <div class="tag-list">
+              <span class="tag">${video.year}年</span>
+              <span class="tag">vs ${video.opponent}</span>
+              ${tagsHtml}
+            </div>
+          </div>
+        `;
+
+        videoGrid.appendChild(card);
+      });
     }
 
-    // --- ページ読み込み時のCookie判定 ---
-    // すでにCookieがあれば入力画面を出さずに動画ページへ直接スキップ
-    if (getCookie(COOKIE_NAME) === COOKIE_VALUE) {
-      window.location.href = TARGET_PAGE;
-    }
+    // 3. イベントリスナーの設定（ドロップダウン変更時に再描画）
+    yearFilter.addEventListener("change", renderVideos);
+    opponentFilter.addEventListener("change", renderVideos);
 
-    // --- フォーム送信時の処理 ---
-    document.getElementById("authForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const input = document.getElementById("passInput").value.trim().toLowerCase();
-
-      // パスワード判定処理（ファイル存在確認方式）
-      const checkUrl = input + ".html";
-
-      fetch(checkUrl, { method: 'HEAD' })
-        .then(response => {
-          if (response.ok && checkUrl === TARGET_PAGE) {
-            // 正解の場合：Cookieを発行してページ移動
-            setCookie(COOKIE_NAME, COOKIE_VALUE, EXPIRES_DAYS);
-            window.location.href = TARGET_PAGE;
-          } else {
-            document.getElementById("errorMsg").style.display = "block";
-          }
-        })
-        .catch(() => {
-          document.getElementById("errorMsg").style.display = "block";
-        });
-    });
+    // 初期表示
+    renderVideos();
   </script>
+</body>
+</html>
 </body>
 </html>
