@@ -190,7 +190,6 @@
         year: "2025",
         opponent: "名古屋大学",
         tags: ["リーグ戦"]
-        button onclick="location.href='youtube://[www.youtube.com/watch?v=id]'": ようつべで見る
       },
       {
         id: "VgCCOsXza6c",
@@ -208,6 +207,20 @@
       } */
     ];
 
+    //button要素
+    const myButton = document.createElement('button');
+    // 2. ボタンのテキストや見た目（クラスなど）を設定
+myButton.textContent = 'YouTubeアプリで見る';
+myButton.className = 'app-btn';
+
+// 3. クリック時の処理を設定（指定のURLへ遷移）
+myButton.addEventListener('click', function() {
+  const videoId = 'dQw4w9WgXcQ';
+  
+  // スマホならYouTubeアプリを開き、ダメならブラウザで開く処理
+  window.location.href = `youtube://www.youtube.com/watch?v=${videoId}`;
+  // 4. 作成したボタンを画面上の特定の要素（例: id="buttonContainer"）に追加
+document.getElementById('buttonContainer').appendChild(myButton);
     // DOM要素の取得
     const yearFilter = document.getElementById("yearFilter");
     const opponentFilter = document.getElementById("opponentFilter");
@@ -255,6 +268,7 @@
               <span class="tag">${video.year}年</span>
               <span class="tag">vs ${video.opponent}</span>
               ${tagsHtml}
+              button onclick="location.href='youtube://[www.youtube.com/watch?v=id]'": ようつべで見る
             </div>
           </div>
         `;
