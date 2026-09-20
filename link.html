@@ -5,6 +5,27 @@
 <!--  <meta http-equiv="refresh" content="10"> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>試合動画アーカイブ</title>
+
+  <!-- Cookieチェック処理（ページの描画前に即座に実行する） -->
+  <script>
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // Cookieが無い場合はトップページ（認証画面）へ強制リダイレクト
+    if (getCookie("site_authenticated") !== "true") {
+      alert("閲覧には認証が必要です。");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  
   <style>
     /* 全体スタイル */
     * {
@@ -125,6 +146,17 @@
     <p>条件を選択して目的の動画を探せます</p>
   </header>
 
+  <!-- ログアウト機能が必要な場合はCookieを削除するボタンを設置可能 -->
+  <button onclick="logout()">ログアウト（認証を解除）</button>
+
+  <script>
+    function logout() {
+      // 過去の日付を指定することでCookieを削除
+      document.cookie = "site_authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      window.location.href = "index.html";
+    }
+  </script>
+
   <!-- 絞り込みフィルター部分 -->
   <div class="filter-container">
     <div class="filter-group">
@@ -235,7 +267,6 @@
     yearFilter.addEventListener("change", renderVideos);
     opponentFilter.addEventListener("change", renderVideos);
 
-    // 初期表示
     renderVideos();
   </script>
 </body>
