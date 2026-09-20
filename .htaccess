@@ -1,0 +1,5 @@
+# Basic認証の設定
+AuthType Basic
+AuthName "Restricted Area"
+AuthUserFile /サーバーの絶対パス/.htpasswd
+Require valid-user
