@@ -153,18 +153,19 @@
       <label for="opponentFilter">対戦相手:</label>
       <select id="opponentFilter">
         <option value="all">すべて</option>
-        <option value="A大学">A大学</option>
-        <option value="B大学">B大学</option>
-        <option value="C高校">C高校</option>
+        <option value="名古屋大学">名古屋大学</option>
+        <option value="愛知教育大学">愛知教育大学</option>
+        <option value="名古屋工業大学">名古屋工業大学</option>
+        <!--  <option value="B大学">B大学</option>  -->
       </select>
     </div>
   </div>
 
-  <!-- 動画一覧出力エリア -->
+  <!-- 動画一覧出力 -->
   <div id="videoGrid" class="video-grid"></div>
 
   <script>
-    // 1. 動画データ定義（YouTubeの動画IDを設定）
+    // 動画データ
     const videos = [
       {
         id: "0BYBRf42wWI", // YouTubeの動画ID
@@ -180,21 +181,42 @@
         opponent: "愛知淑徳大学",
         tags: ["リーグ戦"]
       },
-/*      {
+      {
         id: "dQw4w9WgXcQ",
         title: "2025年 秋季大会 vs C高校 決勝",
         year: "2025",
         opponent: "C高校",
         tags: ["公式戦", "決勝"]
-      } */
+   　   }
+      {
+        id: "dQw4w9WgXcQ",
+        title: "2025年 秋季大会 vs C高校 決勝",
+        year: "2025",
+        opponent: "C高校",
+        tags: ["公式戦", "決勝"]
+   　   }
+ 　   {
+        id: "dQw4w9WgXcQ",
+        title: "2025年 秋季大会 vs C高校 決勝",
+        year: "2025",
+        opponent: "C高校",
+        tags: ["公式戦", "決勝"]
+   　   }
+/*      {
+        id: "dQw4w9WgXcQ",
+        title: "2025年 リーグ戦 vs 名古屋大学",
+        year: "2025",
+        opponent: "名古屋大学",
+        tags: ["リーグ戦"]
+   　   } */
     ];
 
-    // DOM要素の取得
+    // DOM要素取得
     const yearFilter = document.getElementById("yearFilter");
     const opponentFilter = document.getElementById("opponentFilter");
     const videoGrid = document.getElementById("videoGrid");
 
-    // 2. フィルタリング＆描画関数
+    // 2. フィルタリング・描画関数
     function renderVideos() {
       const selectedYear = yearFilter.value;
       const selectedOpponent = opponentFilter.value;
@@ -248,7 +270,7 @@
       });
     }
 
-    // 3. イベントリスナーの設定（ドロップダウン変更時に再描画）
+    // 3. イベントリスナー
     yearFilter.addEventListener("change", renderVideos);
     opponentFilter.addEventListener("change", renderVideos);
 
